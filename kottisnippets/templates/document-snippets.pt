@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+    metal:use-macro="api.macro('kotti:templates/edit/master.pt')">
+    <div metal:fill-slot="content">
+        <h1>${context.title}'s Snippets</h1>
+        <form tal:replace="structure form"></form>
+    </div>
+
+</html>
+
