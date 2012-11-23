@@ -28,7 +28,7 @@ For example:
 ```
 kotti.configurators = 
   kotti_tinymce.kotti_configure 
-	kottisnippets.kotti_configure
+  kottisnippets.kotti_configure
 ```
 
 Usage
