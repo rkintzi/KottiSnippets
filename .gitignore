@@ -1,0 +1,6 @@
+.hg/
+KottiSnippets.egg-info/
+*.pyc
+*~
+*.swp
+*.pt.py

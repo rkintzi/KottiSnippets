@@ -1,0 +1,48 @@
+KottiSnipplets
+==============
+
+This extension allows the end-user (not an administrator / developer) 
+to create a small, re-usable pieces of additional content (snippets), 
+and associate them with the documents. Currently snippets can be placed
+in Kotti slots (on the side panels as well as above and below the 
+content). The user can specify the order in which snippets will be 
+presented in different slots.
+
+
+**NOTE! Extension in the early stages of development!** Do not use 
+in production systems. In subsequent versions, everything can change, 
+without concern for backwards compatibility.
+
+Installation
+------------
+
+As usual:
+
+
+```
+$ python setup.py develop
+```
+
+Then change the ```kotti.configurators``` setting in your INI file. 
+For example:
+
+```
+kotti.configurators = 
+	kotti_tinymce.kotti_configure 
+	kottisnippets.kotti_configure
+```
+
+After restarting, the extension will add an additional node (called 
+Snippets) under the root of the tree of your documents. To this node, 
+users can add snippets. Snippets are created just like any other type 
+of content.
+
+After you create snippets, select the document where you want to place 
+them and select "Snippets" from the "Acction". You'll see a list of 
+available slots to which you can add snippets. To change the order of 
+snippets just drag and drop them. You can also delete snippets of 
+documents.
+
+License
+-------
+KottiSnippets is offered under the BSD-derived Repoze Public License.

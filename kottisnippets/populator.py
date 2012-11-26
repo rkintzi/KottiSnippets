@@ -1,10 +1,10 @@
 from kotti import DBSession
 from kotti.resources import Node
-from resources import SnippetsStorage
+from resources import SnippetCollection
 
 def populator():
-    if DBSession.query(SnippetsStorage).count() == 0:
+    if DBSession.query(SnippetCollection).count() == 0:
         root = DBSession.query(Node).filter(Node.parent_id == None).one()
-        storage = SnippetsStorage('snippet-storage', title='Snippets')
+        storage = SnippetCollection('main-snippet-collection', title='All Snippets')
         DBSession.add(storage)
         root[storage.name] = storage

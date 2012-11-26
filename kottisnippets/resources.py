@@ -4,6 +4,7 @@ from sqlalchemy import (
         ForeignKeyConstraint,
         Integer,
         String,
+        UnicodeText,
         )
 from sqlalchemy.orm import (
         backref,
@@ -19,7 +20,7 @@ from kotti.util import camel_case_to_name
 
 from . import _
 
-class SnippetsStorage(Content):
+class SnippetCollection(Content):
     id = Column('id', Integer, ForeignKey('contents.id'), primary_key = True)
 
     @classproperty
@@ -27,8 +28,36 @@ class SnippetsStorage(Content):
         return dict(polymorphic_identity=camel_case_to_name(cls.__name__))
 
     type_info = Content.type_info.copy(
-            name = u'SnippetsStorage',
-            title = _(u'Snippets'),
+            name = u'SnippetCollection',
+            title = _(u'Snippet Collection'),
+            add_view = None,
+            addable_to = ['SnippetCollection'],
+            edit_links=[],
+            )
+    _in_navigation = False
+
+    @property
+    def in_navigation(self):
+        return False
+
+    @in_navigation.setter
+    def in_navigation(self, in_navigation):
+        pass
+
+    def __init__(self, name=None, title=None):
+        super(SnippetCollection, self).__init__(name=name, title=title,
+                in_navigation=False)
+
+class Snippet(Content):
+    id = Column('id', Integer, ForeignKey('contents.id'), primary_key = True)
+
+    @classproperty
+    def __mapper_args__(cls):
+        return dict(polymorphic_identity=camel_case_to_name(cls.__name__))
+
+    type_info = Content.type_info.copy(
+            name = u'Snippet',
+            title = _(u'Snippet'),
             add_view = None,
             addable_to = [],
             edit_links=[],
@@ -43,20 +72,29 @@ class SnippetsStorage(Content):
     def in_navigation(self, in_navigation):
         pass
 
-    def __init__(self, name=None, title=None):
-        super(SnippetsStorage, self).__init__(name=name, title=title,
-                in_navigation=False)
+    def __init__(self, **kwargs):
+        kwargs['in_navigation'] = False
+        super(Snippet, self).__init__(**kwargs)
 
 
-class Snippet(Document):
-    id = Column('id', Integer, ForeignKey('documents.id'), primary_key = True)
+class TextSnippet(Snippet):
+    id = Column('id', Integer, ForeignKey('snippets.id'), primary_key = True)
 
-    type_info = Document.type_info.copy(
-            name = u'Snippet',
-            title = _(u'Snippet'),
-            addable_to = [u'SnippetsStorage'],
+    body = Column(UnicodeText())
+    mime_type = Column(String(30))
+    
+    type_info = Snippet.type_info.copy(
+            name = u'TextSnippet',
+            title = _(u'Text Snippet'),
             add_view = 'add-snippet',
+            addable_to=['SnippetCollection']
             )
+
+    def __init__(self, body=u"", mime_type='text/html', **kwargs):
+        super(TextSnippet, self).__init__(**kwargs)
+        self.body = body
+        self.mime_type = mime_type
+
 
 class DocumentSlot(Base):
     document_id = Column(Integer, ForeignKey('documents.id'), primary_key=True)
@@ -68,12 +106,6 @@ class DocumentSlot(Base):
                 cascade='all, delete-orphan',
                 ))
     snippets = association_proxy('_snippets', 'snippet')
-#    _snippets = relation(
-#            lambda:DocumentSlotToSnippet,
-#            cascade='all, delete-orphan',
-#            collection_class=ordering_list('position'),
-#            order_by=[DocumentSlotToSnippet.position]
-#            )
             
 
 class DocumentSlotToSnippet(Base):

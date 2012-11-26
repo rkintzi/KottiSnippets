@@ -21,7 +21,13 @@ from kotti.views.slots import assign_slot
 from kotti.util import ViewLink
 
 from . import _
-from resources import Snippet, DocumentSlotToSnippet, SnippetsStorage, DocumentSlot
+from resources import (
+        SnippetCollection,
+        Snippet,
+        TextSnippet,
+        DocumentSlotToSnippet, 
+        DocumentSlot,
+        )
 
 def actions(context, request):
     if isinstance(context, Document):
@@ -31,14 +37,26 @@ def actions(context, request):
     else:
         return kotti_actions(context, request)
 
+def view_collection(context, request):
+    return { 'snippets': context.values() }
 
-class SnippetSchema(ContentSchema):
+class TextSnippetSchema(colander.MappingSchema):
+    title = colander.SchemaNode(
+        colander.String(),
+        title=_(u'Title'),
+        )    
     body = colander.SchemaNode(
         colander.String(),
         title=_(u'Body'),
         widget=RichTextWidget(theme='advanced', width=790, height=500),
-        missing=u"",
         )
+class TextSnippetEditForm(EditFormView):
+    schema_factory = TextSnippetSchema
+
+class TextSnippetAddForm(AddFormView):
+    schema_factory = TextSnippetSchema
+    add = TextSnippet
+    item_type = _(u"TextSnippet")
 
 class Form(KForm):
     def __init__(self, *args, **kwargs):
@@ -151,18 +169,6 @@ class SlotsEditView(BaseFormView):
        return [{"snippet": "snippet-%d" % snippet.snippet_id} for 
                snippet in snippets]
 
-class SnippetEditForm(EditFormView):
-    schema_factory = SnippetSchema
-
-class SnippetAddForm(AddFormView):
-    schema_factory = SnippetSchema
-    add = Snippet
-    item_type = _(u"Snippet")
-
-def view_storage(context, request):
-    return { 'snippets': context.values() }
-
-
 def mk_snippet_view(name):
     def view(context, request):
         if hasattr(context, 'slots'):
@@ -175,7 +181,6 @@ def mk_snippet_view(name):
         raise PredicateMismatch()
     return view
 
-
 def includeme(config):
     config.add_view(
         actions,
@@ -184,26 +189,25 @@ def includeme(config):
         renderer='kotti:templates/actions-dropdown.pt',
         )
     config.add_view(
-            view_storage,
-            context=SnippetsStorage,
+            view_collection,
+            context=SnippetCollection,
             name='view',
             permission='edit',
             renderer='kottisnippets:templates/snippet-list.pt',
             )
     config.add_view(
-            SnippetEditForm,
-            context=Snippet,
+            TextSnippetEditForm,
+            context=TextSnippet,
             name='edit',
             permission='edit',
             renderer='kotti:templates/edit/node.pt'
             )
     config.add_view(
-            SnippetAddForm,
-            name=Snippet.type_info.add_view,
+            TextSnippetAddForm,
+            name=TextSnippet.type_info.add_view,
             permission='add',
             renderer='kotti:templates/edit/node.pt',
             )
-
     config.add_view(
             SlotsEditView,
             context=Document,
@@ -211,9 +215,11 @@ def includeme(config):
             permission='edit',
             renderer='kottisnippets:templates/document-snippets.pt'
             )
+
     for name, title in SlotsEditView.available_slots:
         config.add_view(mk_snippet_view(name),
                 name = '%s-slot-snippets' % name,
                 renderer = 'kottisnippets:templates/snippets.pt',
                 )
         assign_slot('%s-slot-snippets' % name, name)
+
