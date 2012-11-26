@@ -30,9 +30,8 @@ class SnippetCollection(Content):
     type_info = Content.type_info.copy(
             name = u'SnippetCollection',
             title = _(u'Snippet Collection'),
-            add_view = None,
+            add_view = u'add-snippet-collection',
             addable_to = ['SnippetCollection'],
-            edit_links=[],
             )
     _in_navigation = False
 
@@ -60,7 +59,6 @@ class Snippet(Content):
             title = _(u'Snippet'),
             add_view = None,
             addable_to = [],
-            edit_links=[],
             )
     _in_navigation = False
 
@@ -86,7 +84,7 @@ class TextSnippet(Snippet):
     type_info = Snippet.type_info.copy(
             name = u'TextSnippet',
             title = _(u'Text Snippet'),
-            add_view = 'add-snippet',
+            add_view = u'add-snippet',
             addable_to=['SnippetCollection']
             )
 

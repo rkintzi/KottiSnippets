@@ -18,6 +18,7 @@ from kotti.views.edit import ContentSchema
 from kotti.views.form import EditFormView, AddFormView, BaseFormView
 from kotti.views.form import Form as KForm
 from kotti.views.slots import assign_slot
+from kotti.views.util import nodes_tree
 from kotti.util import ViewLink
 
 from . import _
@@ -38,7 +39,12 @@ def actions(context, request):
         return kotti_actions(context, request)
 
 def view_collection(context, request):
-    return { 'snippets': context.values() }
+    tree = nodes_tree(request, context=context)
+    return { 
+            'tree': {
+                'children': [tree],
+                }
+            }
 
 class TextSnippetSchema(colander.MappingSchema):
     title = colander.SchemaNode(
@@ -57,6 +63,20 @@ class TextSnippetAddForm(AddFormView):
     schema_factory = TextSnippetSchema
     add = TextSnippet
     item_type = _(u"TextSnippet")
+
+class SnippetCollectionSchema(colander.MappingSchema):
+    title = colander.SchemaNode(
+        colander.String(),
+        title=_(u'Title'),
+        )
+
+class SnippetCollectionEditForm(EditFormView):
+    schema_factory = SnippetCollectionSchema
+
+class SnippetCollectionAddForm(AddFormView):
+    schema_factory = SnippetCollectionSchema
+    add = SnippetCollection
+    item_type = _(u"SnippetCollection")
 
 class Form(KForm):
     def __init__(self, *args, **kwargs):
@@ -191,14 +211,28 @@ def includeme(config):
     config.add_view(
             view_collection,
             context=SnippetCollection,
-            name='view',
+            name=u'view',
             permission='edit',
-            renderer='kottisnippets:templates/snippet-list.pt',
+            renderer='kottisnippets:templates/snippet-collection.pt',
+            )
+    
+    config.add_view(
+            SnippetCollectionEditForm,
+            context=SnippetCollection,
+            name=u'edit',
+            permission='edit',
+            renderer='kotti:templates/edit/node.pt'
+            )
+    config.add_view(
+            SnippetCollectionAddForm,
+            name=SnippetCollection.type_info.add_view,
+            permission='add',
+            renderer='kotti:templates/edit/node.pt',
             )
     config.add_view(
             TextSnippetEditForm,
             context=TextSnippet,
-            name='edit',
+            name=u'edit',
             permission='edit',
             renderer='kotti:templates/edit/node.pt'
             )
@@ -211,7 +245,7 @@ def includeme(config):
     config.add_view(
             SlotsEditView,
             context=Document,
-            name='snippets',
+            name=u'snippets',
             permission='edit',
             renderer='kottisnippets:templates/document-snippets.pt'
             )

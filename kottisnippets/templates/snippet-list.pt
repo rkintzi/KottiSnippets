@@ -6,7 +6,6 @@
         <div tal:repeat="snippet snippets" class="snippet-desc">
         <article class="snippet">
         <h2>${snippet.title}</h2>
-            ${snippet.description}
         </article>
         <div class=snippet-links"><a href="${api.url(snippet)}">view</a>,
             <a href="${api.url(snippet, '@@edit')}">edit</a>
