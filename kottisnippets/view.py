@@ -203,11 +203,11 @@ def mk_snippet_view(name):
 
 def includeme(config):
     config.add_view(
-        actions,
-        name='actions-dropdown',
-        permission='view',
-        renderer='kotti:templates/actions-dropdown.pt',
-        )
+            actions,
+            name='actions-dropdown',
+            permission='view',
+            renderer='kotti:templates/actions-dropdown.pt',
+            )
     config.add_view(
             view_collection,
             context=SnippetCollection,
