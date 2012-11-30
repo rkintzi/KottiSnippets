@@ -1,5 +1,5 @@
-<div class="snippets-${slot_name}" condition="snippets">
-    <div class="snippet-${slot_name}" tal:repeat="snippet snippets">
+<div class="snippets snippets-${slot_name}" tal:condition="snippets">
+    <div class="snippet snippet-${slot_name}" tal:repeat="snippet snippets">
         <tal:span tal:replace="structure: snippet.body"></tal:span>
     </div>
 </div>

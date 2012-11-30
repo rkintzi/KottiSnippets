@@ -11,7 +11,6 @@ from deform.widget import (
         )
 from sqlalchemy.sql import and_
 from pyramid.httpexceptions import HTTPFound
-from pyramid.exceptions import PredicateMismatch
 from kotti.resources import Document, DBSession
 from kotti.views.edit.actions import actions as kotti_actions
 from kotti.views.edit import ContentSchema
@@ -29,6 +28,7 @@ from resources import (
         DocumentSlotToSnippet, 
         DocumentSlot,
         )
+from config import get_registered_slots
 
 def actions(context, request):
     if isinstance(context, Document):
@@ -102,17 +102,11 @@ class SlotsEditView(BaseFormView):
     form_class = Form
     buttons = ('save',)
 
-    available_slots=[
-            (u'left', _("Left Slot")),
-            (u'right', _("Right Slot")),
-            (u'abovecontent', _("Above Content Slot")),
-            (u'belowcontent', _("Below Content Slot")),
-            ]
-
-    def __init__(self, *args, **kwargs):
-        super(SlotsEditView, self).__init__(*args, **kwargs)
+    def __init__(self, context, request, **kwargs):
+        super(SlotsEditView, self).__init__(context, request, **kwargs)
         self.schema = colander.SchemaNode(colander.Mapping(), name="slots")
-        for name, title in self.available_slots:
+        view_name = context.default_view or "view"
+        for name, title in get_registered_slots(view_name):
             choices = self._available_snippets(self.request.context, name)
             choices = map(lambda s: ("snippet-%d" % s.id, s.title), choices)
             snippet = colander.SchemaNode(colander.Mapping(), 
@@ -136,7 +130,8 @@ class SlotsEditView(BaseFormView):
     def appstruct(self):
         context = self.request.context
         appstruct = {}
-        for name, _ in self.available_slots:
+        view_name = self.context.default_view or "view"
+        for name, _ in get_registered_slots(view_name):
             appstruct[name] = self._used_snippets(context, name)
         return appstruct
 
@@ -144,7 +139,8 @@ class SlotsEditView(BaseFormView):
         appstruct.pop('csrf_token', None)
         context = self.request.context
         mapper = lambda snippet: ("snippet-%d" % snippet.id, snippet)
-        slots_names = [name for name, title in self.available_slots]
+        view_name = self.context.default_view or "view"
+        slots_names = [name for name, title in get_registered_slots(view_name)]
         for slot in context.slots:
             if slot.name in slots_names:
                 snippets = self._available_snippets(context, slot.name)
@@ -249,11 +245,3 @@ def includeme(config):
             permission='edit',
             renderer='kottisnippets:templates/document-snippets.pt'
             )
-
-    for name, title in SlotsEditView.available_slots:
-        config.add_view(mk_snippet_view(name),
-                name = '%s-slot-snippets' % name,
-                renderer = 'kottisnippets:templates/snippets.pt',
-                )
-        assign_slot('%s-slot-snippets' % name, name)
-
