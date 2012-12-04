@@ -1,7 +1,9 @@
+from pyramid.view import render_view_to_response
 import venusian
 from kotti.views.slots import assign_slot
 from pyramid.exceptions import PredicateMismatch
 from kottisnippets import _
+from resources import TextSnippet
 
 default_slots = [
         (u'left', _("Left Slot")),
@@ -25,17 +27,42 @@ class provides_slots(object):
             config.kotti_snippets(self.name, self.slots)
         info = venusian.attach(view, callback, category='kotti_snippets')
         return view
-    
-def view(context, request):
+
+def render_list(context, request):
     name = request.POST['slot_name']
     if hasattr(context, 'slots'):
         for slot in context.slots:
             if slot.name == name and slot.snippets:
-                return {
-                        'slot_name': name,
-                        'snippets': slot.snippets,
-                        }
+                view_name = 'kotti_snippets-view-%s-list' % name
+                response = render_view_to_response(context, request,
+                        name=view_name)
+                if response is None:
+                    view_name = 'kotti_snippets-view-list'
+                    response = render_view_to_response(context, request,
+                            name=view_name)
+                if response is None:
+                    return {
+                            'slot_name': name,
+                            'snippets': slot.snippets,
+                           }
+                return response
     raise PredicateMismatch()
+
+def render_snippet(context, request):
+    name = request.POST['slot_name']
+    view_name = 'kotti_snippets-view-%s-snippet' % name
+    response = render_view_to_response(context, request,
+            name=view_name)
+    if response is None:
+        view_name = 'kotti_snippets-view-snippet'
+        response = render_view_to_response(context, request,
+                name=view_name)
+    if response is None:
+        return { 
+                'slot_name': name,
+                'snippet': context 
+               }
+    return response
 
 def _register_slot(config, view_name, slots):
     if not slots:
@@ -45,7 +72,7 @@ def _register_slot(config, view_name, slots):
             "for view `%s'" % view_name)
     for name, title in list(slots):
         params = dict(slot_name = name)
-        assign_slot('kotti-snippets-view', name, params=params)
+        assign_slot('kotti_snippets-render-list', name, params=params)
     registered_slots[view_name] = slots
 
 def _register_default_slots_if_needed(config):
@@ -57,9 +84,14 @@ def _register_slot_directive(config, view_name, *slots):
             (config, view_name, slots), order=0)
 
 def includeme(config):
-    config.add_view(view,
-            name='kotti-snippets-view',
-            renderer = 'kottisnippets:templates/snippets.pt',
+    config.add_view(render_list,
+            name='kotti_snippets-render-list',
+            renderer = 'kottisnippets:templates/render-list.pt',
+            )
+    config.add_view(render_snippet,
+            context=TextSnippet,
+            name='kotti_snippets-render-snippet',
+            renderer = 'kottisnippets:templates/render-snippet.pt',
             )
     config.action('kotti_snippets', _register_default_slots_if_needed, 
             (config, ), order=1)

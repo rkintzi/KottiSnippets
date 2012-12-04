@@ -1,5 +1,5 @@
 <div class="snippets snippets-${slot_name}" tal:condition="snippets">
     <div tal:repeat="snippet snippets"
-        tal:replace="structure: api.render_view(snippet, request, 'kotti_snippets-render-snippet')">
+        tal:replace="api.render_view('kotti_snippets-render-snippet', snippet, request)">
     </div>
 </div>

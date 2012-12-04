@@ -1,0 +1,3 @@
+<div class="snippet snippet-${slot_name}">
+    <tal:span tal:replace="structure: snippet.body"></tal:span>
+</div>
