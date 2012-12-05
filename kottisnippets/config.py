@@ -29,6 +29,7 @@ class provides_slots(object):
         return view
 
 def render_list(context, request):
+    request.orig_context = context
     name = request.POST['slot_name']
     if hasattr(context, 'slots'):
         for slot in context.slots:

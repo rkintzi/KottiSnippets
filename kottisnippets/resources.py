@@ -117,7 +117,9 @@ class DocumentSlotToSnippet(Base):
         return dict(polymorphic_identity=camel_case_to_name(cls.__name__))
     document_id = Column(Integer, primary_key=True)
     slot_name = Column(String, primary_key = True)
-    snippet_id = Column(Integer, ForeignKey('snippets.id'), primary_key=True)
+    snippet_id = Column(Integer, 
+            ForeignKey('snippets.id', ondelete="CASCADE", onupdate="CASCADE"), 
+            primary_key=True)
     position = Column(Integer, nullable=False)
     snippet = relation(Snippet)
 
