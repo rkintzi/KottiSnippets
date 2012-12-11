@@ -3,7 +3,7 @@ import venusian
 from kotti.views.slots import assign_slot
 from pyramid.exceptions import PredicateMismatch
 from kottisnippets import _
-from resources import TextSnippet
+from resources import TextSnippet, Snippet
 
 default_slots = [
         (u'left', _("Left Slot")),
@@ -12,6 +12,7 @@ default_slots = [
         (u'belowcontent', _("Below Content Slot")),
         ]
 registered_slots = {}
+registered_slots_names = set()
 
 def get_registered_slots(name):
     return registered_slots.get(name,[])
@@ -59,11 +60,14 @@ def render_snippet(context, request):
         response = render_view_to_response(context, request,
                 name=view_name)
     if response is None:
-        return { 
-                'slot_name': name,
-                'snippet': context 
-               }
+        raise PredicateMismatch()
     return response
+
+def render_text_snippet(context, request):
+    return { 
+            'slot_name': name,
+            'snippet': context 
+            }
 
 def _register_slot(config, view_name, slots):
     if not slots:
@@ -72,8 +76,10 @@ def _register_slot(config, view_name, slots):
         raise ConfigurationError("There are slots already registerd "
             "for view `%s'" % view_name)
     for name, title in list(slots):
-        params = dict(slot_name = name)
-        assign_slot('kotti_snippets-render-list', name, params=params)
+        if name not in registered_slots_names:
+            params = dict(slot_name = name)
+            assign_slot('kotti_snippets-render-list', name, params=params)
+            registered_slots_names.add(name)
     registered_slots[view_name] = slots
 
 def _register_default_slots_if_needed(config):
@@ -91,8 +97,12 @@ def includeme(config):
             )
     config.add_view(render_snippet,
             context=TextSnippet,
-            name='kotti_snippets-render-snippet',
+            name='kotti_snippets-view-snippet',
             renderer = 'kottisnippets:templates/render-snippet.pt',
+            )
+    config.add_view(render_snippet,
+            context=Snippet,
+            name='kotti_snippets-render-snippet',
             )
     config.action('kotti_snippets', _register_default_slots_if_needed, 
             (config, ), order=1)
