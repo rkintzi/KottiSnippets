@@ -5,6 +5,6 @@ _ = TranslationStringFactory('KottiSnippets')
 
 def kotti_configure(settings):
     settings['pyramid.includes'] += ' kottisnippets.config'
-    settings['kotti.available_types'] += ' kottisnippets.resources.Snippet'
+    settings['kotti.available_types'] += ' kottisnippets.resources.TextSnippet'
     settings['kotti.populators'] += ' kottisnippets.populator.populator'
 
