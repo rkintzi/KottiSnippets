@@ -7,7 +7,7 @@ README = open(os.path.join(here, 'README.md')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.md')).read()
 
 requires = [
-        'kotti >= 0.8a1',
+        'kotti >= 0.8b1',
     ]
 
 setup(name='KottiSnippets',
