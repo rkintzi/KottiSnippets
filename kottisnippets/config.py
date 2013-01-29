@@ -87,7 +87,7 @@ def _register_default_slots_if_needed(config):
         _register_slot(config, 'view', default_slots)
 
 def _register_slot_directive(config, view_name, *slots):
-    config.action('kotti_snippets', _register_slot, 
+    config.action('kotti_snippets-%s' % view_name, _register_slot, 
             (config, view_name, slots), order=0)
 
 def includeme(config):
