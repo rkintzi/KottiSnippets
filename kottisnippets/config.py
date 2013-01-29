@@ -43,6 +43,7 @@ def render_list(context, request):
                     response = render_view_to_response(context, request,
                             name=view_name)
                 if response is None:
+                    request.snippets = slot.snippets
                     return {
                             'slot_name': name,
                             'snippets': slot.snippets,
@@ -95,7 +96,7 @@ def includeme(config):
             name='kotti_snippets-render-list',
             renderer = 'kottisnippets:templates/render-list.pt',
             )
-    config.add_view(render_snippet,
+    config.add_view(render_text_snippet,
             context=TextSnippet,
             name='kotti_snippets-view-snippet',
             renderer = 'kottisnippets:templates/render-snippet.pt',
