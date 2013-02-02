@@ -35,6 +35,7 @@ def render_list(context, request):
     if hasattr(context, 'slots'):
         for slot in context.slots:
             if slot.name == name and slot.snippets:
+                request.snippets = slot.snippets
                 view_name = 'kotti_snippets-view-%s-list' % name
                 response = render_view_to_response(context, request,
                         name=view_name)
@@ -66,7 +67,7 @@ def render_snippet(context, request):
 
 def render_text_snippet(context, request):
     return { 
-            'slot_name': name,
+            'slot_name': request.POST['slot_name'],
             'snippet': context 
             }
 
@@ -96,14 +97,14 @@ def includeme(config):
             name='kotti_snippets-render-list',
             renderer = 'kottisnippets:templates/render-list.pt',
             )
+    config.add_view(render_snippet,
+            context=Snippet,
+            name='kotti_snippets-render-snippet',
+            )
     config.add_view(render_text_snippet,
             context=TextSnippet,
             name='kotti_snippets-view-snippet',
             renderer = 'kottisnippets:templates/render-snippet.pt',
-            )
-    config.add_view(render_snippet,
-            context=Snippet,
-            name='kotti_snippets-render-snippet',
             )
     config.action('kotti_snippets', _register_default_slots_if_needed, 
             (config, ), order=1)
