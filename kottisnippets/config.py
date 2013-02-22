@@ -35,13 +35,17 @@ def render_list(context, request):
     if hasattr(context, 'slots'):
         for slot in context.slots:
             if slot.name == name and slot.snippets:
-                request.snippets = slot.snippets
-                view_name = 'kotti_snippets-view-%s-list' % name
-                response = render_view_to_response(context, request,
+                snippets = request.snippets = list(slot.snippets)
+                view_name = 'kottisnippets-list-%s' % name
+                response = render_view_to_response(
+                        snippets, 
+                        request,
                         name=view_name)
                 if response is None:
-                    view_name = 'kotti_snippets-view-list'
-                    response = render_view_to_response(context, request,
+                    view_name = 'kottisnippets-list'
+                    response = render_view_to_response(
+                            snippets, 
+                            request,
                             name=view_name)
                 if response is None:
                     request.snippets = slot.snippets
@@ -54,11 +58,11 @@ def render_list(context, request):
 
 def render_snippet(context, request):
     name = request.POST['slot_name']
-    view_name = 'kotti_snippets-view-%s-snippet' % name
+    view_name = 'kottisnippets-view-%s' % name
     response = render_view_to_response(context, request,
             name=view_name)
     if response is None:
-        view_name = 'kotti_snippets-view-snippet'
+        view_name = 'kottisnippets-view'
         response = render_view_to_response(context, request,
                 name=view_name)
     if response is None:
@@ -80,7 +84,7 @@ def _register_slot(config, view_name, slots):
     for name, title in list(slots):
         if name not in registered_slots_names:
             params = dict(slot_name = name)
-            assign_slot('kotti_snippets-render-list', name, params=params)
+            assign_slot('kottisnippets-render-list', name, params=params)
             registered_slots_names.add(name)
     registered_slots[view_name] = slots
 
@@ -93,17 +97,20 @@ def _register_slot_directive(config, view_name, *slots):
             (config, view_name, slots), order=0)
 
 def includeme(config):
-    config.add_view(render_list,
-            name='kotti_snippets-render-list',
+    config.add_view(
+            render_list,
+            name='kottisnippets-render-list',
             renderer = 'kottisnippets:templates/render-list.pt',
             )
-    config.add_view(render_snippet,
+    config.add_view(
+            render_snippet,
             context=Snippet,
-            name='kotti_snippets-render-snippet',
+            name='kottisnippets-render-snippet',
             )
-    config.add_view(render_text_snippet,
+    config.add_view(
+            render_text_snippet,
             context=TextSnippet,
-            name='kotti_snippets-view-snippet',
+            name='kottisnippets-view',
             renderer = 'kottisnippets:templates/render-snippet.pt',
             )
     config.action('kotti_snippets', _register_default_slots_if_needed, 

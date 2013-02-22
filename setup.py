@@ -11,7 +11,7 @@ requires = [
     ]
 
 setup(name='KottiSnippets',
-      version='0.1',
+      version='0.2',
       description='KottiSnippets',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
